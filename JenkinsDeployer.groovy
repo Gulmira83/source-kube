@@ -1,4 +1,5 @@
 def k8slabel = "jenkins-pipeline-${UUID.randomUUID().toString()}"
+def configData = ''
 def slavePodTemplate = """
       metadata:
         labels:
@@ -96,9 +97,34 @@ podTemplate(name: k8slabel, label: k8slabel, yaml: slavePodTemplate, showRawYaml
                 )
             }
 
+            stage("Generate Config") {
+                sh """
+                    cat  /etc/secrets/service-account/credentials.json > ${WORKSPACE}/deployments/terraform/fuchicorp-service-account.json
+                    ## This script should move to docker container to set up ~/.kube/config
+                    sh /scripts/Dockerfile/set-config.sh
+                    """
+
+                dir("${WORKSPACE}/deployments/terraform") { 
+                    configData += """
+                    deployment_environment = \"${params.environment}\"
+                    deployment_name        = \"source-kube\"   
+                    credentials            = \"./fuchicorp-service-account.json\"
+                    """.stripIndent()
+
+                    writeFile(
+                    [file: "${WORKSPACE}/deployments/terraform/deployment_configuration.tfvars", text: "${configData}"]
+                    )
+                }
+                
+            }
+
             container("terraform-container") {
                 dir("${WORKSPACE}/deployments/terraform") {
-                    sh 'terraform init'
+                    sh '''
+                    #!/bin/bash
+                    source set-env.sh deployment_configuration.tfvars
+                    terraform apply --auto-approve
+                    '''
                 }
                 
             }
