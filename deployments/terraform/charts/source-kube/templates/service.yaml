@@ -3,10 +3,7 @@ kind: Service
 metadata:
   name: {{ include "source-kube.fullname" . }}
   labels:
-    app.kubernetes.io/name: {{ include "source-kube.name" . }}
-    helm.sh/chart: {{ include "source-kube.chart" . }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{ include "source-kube.labels" . | indent 4 }}
 spec:
   type: {{ .Values.service.type }}
   ports:
