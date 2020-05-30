@@ -128,7 +128,8 @@ podTemplate(name: k8slabel, label: k8slabel, yaml: slavePodTemplate, showRawYaml
             stage("Trigger Deploy") {
                 build job: "source-kube-deploy", 
                 parameters: [
-                    [$class: 'StringParameterValue', name: 'environment', value: "dev"]
+                    [$class: 'StringParameterValue', name: 'environment', value: "dev"],
+                    [$class: 'StringParameterValue', name: 'dockerImage', value: "docker.fuchicorp.com/source-kube:latest"]
                     ]
             }
         }
