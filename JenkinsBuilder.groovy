@@ -84,9 +84,11 @@ podTemplate(name: k8slabel, label: k8slabel, yaml: slavePodTemplate, showRawYaml
     node(k8slabel) {
         dir("${WORKSPACE}/") {
 
-            stage("Pull Source Code") {
-                checkout scm
-                gitCommitHash = sh(returnStdout: true, script: 'git rev-parse --short HEAD').trim()
+            container('fuchicorptools') {
+                stage("Pull Source Code") {
+                    checkout scm
+                    gitCommitHash = sh(returnStdout: true, script: 'git rev-parse --short HEAD').trim()
+                }
             }
             
             stage("Docker build") {
