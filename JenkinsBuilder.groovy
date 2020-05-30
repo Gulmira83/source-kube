@@ -126,7 +126,7 @@ podTemplate(name: k8slabel, label: k8slabel, yaml: slavePodTemplate, showRawYaml
             }
 
             stage("Trigger Deploy") {
-                build job: "fsadykov-source-kube-deploy", 
+                build job: "source-kube-deploy", 
                 parameters: [
                     [$class: 'StringParameterValue', name: 'environment', value: "dev"]
                     ]
