@@ -117,6 +117,10 @@ podTemplate(name: k8slabel, label: k8slabel, yaml: slavePodTemplate, showRawYaml
                     '''
                 }
             }
+
+            stage("Clean up") {
+                sh "echo 'Hello'"
+            }
         }
     }
 }
