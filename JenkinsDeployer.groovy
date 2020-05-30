@@ -18,35 +18,6 @@ def slavePodTemplate = """
                   - jenkins-jenkins-master
               topologyKey: "kubernetes.io/hostname"
         containers:
-        - name: ansible-container
-          image: ansibleplaybookbundle/s2i-apb
-          imagePullPolicy: IfNotPresent
-          command:
-          - cat
-          tty: true
-        - name: python-container
-          image: python:latest
-          imagePullPolicy: IfNotPresent
-          command:
-          - cat
-          tty: true
-        - name: terraform-container
-          image: hashicorp/terraform:0.11.14
-          imagePullPolicy: IfNotPresent
-          command:
-          - cat
-          tty: true
-        - name: docker
-          image: docker:latest
-          imagePullPolicy: IfNotPresent
-          command:
-          - cat
-          tty: true
-          volumeMounts:
-            - mountPath: /var/run/docker.sock
-              name: docker-sock
-            - mountPath: /etc/secrets/service-account/
-              name: google-service-account
         - name: fuchicorptools
           image: fuchicorp/buildtools
           imagePullPolicy: Always
@@ -83,8 +54,8 @@ properties([
 
 podTemplate(name: k8slabel, label: k8slabel, yaml: slavePodTemplate, showRawYaml: params.DebugMode) {
     node(k8slabel) {
+      container("fuchicorptools") {
         dir("${WORKSPACE}/") {
-
             stage("Pull Source Code") {
                 git branch: 'dev-feature/fsadykov', url: 'https://github.com/fuchicorp/source-kube.git'
             }
@@ -95,6 +66,14 @@ podTemplate(name: k8slabel, label: k8slabel, yaml: slavePodTemplate, showRawYaml
                 Environment: ${params.environment}
                 """  
                 )
+            }
+
+            if (params.environment == "cluster-1") {
+              sh = '''#!/bin/bash
+              cp -rf /cluster-1  ~/.kube/config'''
+            } else if (params.environment == "cluster-2") {
+              sh = '''#!/bin/bash
+              cp -rf /cluster-2  ~/.kube/config'''
             }
 
             stage("Generate Config") {
@@ -118,20 +97,15 @@ podTemplate(name: k8slabel, label: k8slabel, yaml: slavePodTemplate, showRawYaml
                 
             }
 
-            container("terraform-container") {
-                dir("${WORKSPACE}/deployments/terraform") {
-                    sh '''
-                    #!/bin/bash
+            stage("Apply/Plan") {
+              dir("${WORKSPACE}/deployments/terraform") {
+                    sh '''#!/bin/bash -e
                     source set-env.sh deployment_configuration.tfvars
-                    terraform apply --auto-approve
+                    terraform apply --auto-approve -var-file=deployment_configuration.tfvars
                     '''
                 }
-                
-            }
-
-            container("python-container") {
-                sh 'python --version'
-            }
+            }   
+          }
         }
+      }
     }
-}
