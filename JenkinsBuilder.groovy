@@ -106,19 +106,19 @@ podTemplate(name: k8slabel, label: k8slabel, yaml: slavePodTemplate, showRawYaml
                     usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']
                     ]) {
                         container("docker") {
-                            sh '''
-                            docker login --username $USERNAME --password $PASSWORD docker.fuchicorp.com/source-kube:latest
-                            '''
+                            sh """
+                            docker login --username $USERNAME --password $PASSWORD docker.fuchicorp.com/source-kube:${gitCommitHash}
+                            """
                         }
                     }
             }
 
             stage("Docker Push") {
                 container("docker") {
-                    sh '''
+                    sh """
                     docker tag source-kube:latest docker.fuchicorp.com/source-kube:${gitCommitHash}
                     docker push docker.fuchicorp.com/source-kube:${gitCommitHash}
-                    '''
+                    """
                 }
             }
 
