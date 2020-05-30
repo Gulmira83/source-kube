@@ -123,7 +123,13 @@ podTemplate(name: k8slabel, label: k8slabel, yaml: slavePodTemplate, showRawYaml
                     sh "docker rmi --no-prune docker.fuchicorp.com/source-kube:latest"
                     sh "docker rmi --no-prune source-kube" 
                 }
-                
+            }
+
+            stage("Trigger Deploy") {
+                build job: "fsadykov-source-kube-deploy", 
+                parameters: [
+                    [$class: 'StringParameterValue', name: 'environment', value: "dev"]
+                    ]
             }
         }
     }
