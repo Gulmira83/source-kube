@@ -57,7 +57,7 @@ podTemplate(name: k8slabel, label: k8slabel, yaml: slavePodTemplate, showRawYaml
       container("fuchicorptools") {
         dir("${WORKSPACE}/") {
             stage("Pull Source Code") {
-                git branch: 'dev-feature/fsadykov', url: 'https://github.com/fuchicorp/source-kube.git'
+                git branch: 'master', url: 'https://github.com/fuchicorp/source-kube.git'
             }
 
             stage("Deployment Info") {
@@ -66,14 +66,6 @@ podTemplate(name: k8slabel, label: k8slabel, yaml: slavePodTemplate, showRawYaml
                 Environment: ${params.environment}
                 """  
                 )
-            }
-
-            if (params.environment == "cluster-1") {
-              sh = '''#!/bin/bash
-              cp -rf /cluster-1  ~/.kube/config'''
-            } else if (params.environment == "cluster-2") {
-              sh = '''#!/bin/bash
-              cp -rf /cluster-2  ~/.kube/config'''
             }
 
             stage("Generate Config") {
@@ -97,14 +89,14 @@ podTemplate(name: k8slabel, label: k8slabel, yaml: slavePodTemplate, showRawYaml
                 
             }
 
-            stage("Apply/Plan") {
-              dir("${WORKSPACE}/deployments/terraform") {
+            
+                dir("${WORKSPACE}/deployments/terraform") {
                     sh '''#!/bin/bash -e
                     source set-env.sh deployment_configuration.tfvars
                     terraform apply --auto-approve -var-file=deployment_configuration.tfvars
                     '''
                 }
-            }   
+                
           }
         }
       }
