@@ -119,7 +119,8 @@ podTemplate(name: k8slabel, label: k8slabel, yaml: slavePodTemplate, showRawYaml
             }
 
             stage("Clean up") {
-                sh "echo 'Hello'"
+                sh "docker rmi --no-prune docker.fuchicorp.com/source-kube:latest"
+                sh "docker rmi --no-prune source-kube" 
             }
         }
     }
