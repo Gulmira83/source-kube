@@ -91,14 +91,14 @@ podTemplate(name: k8slabel, label: k8slabel, yaml: slavePodTemplate, showRawYaml
                 
             }
 
-            
-                dir("${WORKSPACE}/deployments/terraform") {
+            stage("Apply/Plan") {
+              dir("${WORKSPACE}/deployments/terraform") {
                     sh '''#!/bin/bash -e
                     source set-env.sh deployment_configuration.tfvars
                     terraform apply --auto-approve -var-file=deployment_configuration.tfvars
                     '''
                 }
-                
+            }                
           }
         }
       }

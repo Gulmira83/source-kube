@@ -1,4 +1,5 @@
 def k8slabel = "jenkins-pipeline-${UUID.randomUUID().toString()}"
+def gitCommitHash = ""
 def slavePodTemplate = """
       metadata:
         labels:
@@ -85,6 +86,7 @@ podTemplate(name: k8slabel, label: k8slabel, yaml: slavePodTemplate, showRawYaml
 
             stage("Pull Source Code") {
                 checkout scm
+                gitCommitHash = sh(returnStdout: true, script: 'git rev-parse --short HEAD').trim()
             }
             
             stage("Docker build") {
@@ -112,15 +114,15 @@ podTemplate(name: k8slabel, label: k8slabel, yaml: slavePodTemplate, showRawYaml
             stage("Docker Push") {
                 container("docker") {
                     sh '''
-                    docker tag source-kube:latest docker.fuchicorp.com/source-kube:latest
-                    docker push docker.fuchicorp.com/source-kube:latest
+                    docker tag source-kube:latest docker.fuchicorp.com/source-kube:${gitCommitHash}
+                    docker push docker.fuchicorp.com/source-kube:${gitCommitHash}
                     '''
                 }
             }
 
             stage("Clean up") {
                 container("docker") {
-                    sh "docker rmi --no-prune docker.fuchicorp.com/source-kube:latest"
+                    sh "docker rmi --no-prune docker.fuchicorp.com/source-kube:${gitCommitHash}"
                     // sh "docker rmi --no-prune source-kube" 
                 }
             }
@@ -129,7 +131,7 @@ podTemplate(name: k8slabel, label: k8slabel, yaml: slavePodTemplate, showRawYaml
                 build job: "source-kube-deploy", 
                 parameters: [
                     [$class: 'StringParameterValue', name: 'environment', value: "dev"],
-                    [$class: 'StringParameterValue', name: 'dockerImage', value: "docker.fuchicorp.com/source-kube:latest"]
+                    [$class: 'StringParameterValue', name: 'dockerImage', value: "docker.fuchicorp.com/source-kube:${gitCommitHash}"]
                     ]
             }
         }
