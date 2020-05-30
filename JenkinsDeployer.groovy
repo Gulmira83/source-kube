@@ -46,7 +46,8 @@ properties([
     parameters([
 
         booleanParam(defaultValue: false, description: 'Please select debug mode true to be able to turn on ', name: 'DebugMode'),
-        choice(choices: ['dev', 'qa', 'prod', 'test'], description: 'Please select the environment to deploy', name: 'environment')
+        choice(choices: ['dev', 'qa', 'prod', 'test'], description: 'Please select the environment to deploy', name: 'environment'),
+        string(defaultValue: 'docker.fuchicorp.com/source-kube:latest', description: 'Please provide the docker image to deploy ', name: 'dockerImage', trim: true)
         
         ])
     ])
@@ -80,6 +81,7 @@ podTemplate(name: k8slabel, label: k8slabel, yaml: slavePodTemplate, showRawYaml
                     deployment_environment = \"${params.environment}\"
                     deployment_name        = \"source-kube\"   
                     credentials            = \"./fuchicorp-service-account.json\"
+                    deployment_image       = \"${dockerImage}\"
                     """.stripIndent()
 
                     writeFile(
