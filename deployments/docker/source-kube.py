@@ -1,9 +1,9 @@
-from flask import Flask
+from flask import Flask, jsonify
 app = Flask(__name__)
 
 @app.route('/')
 def hello_world():
-    return 'Welcome to Source Kube!!'
+    return jsonify({"source-kube": "Welcome to Source Kube!!", "message": "Hello World"})
 
 
 if __name__ == "__main__":
