@@ -84,6 +84,8 @@ if (branch.contains('dev-feature')) {
     environment = "dev"
 } else if (branch.contains('qa-feature')) {
     environment = "qa"
+} else if (branch.contains('master')) {
+    environment = "prod"
 }
 
 
