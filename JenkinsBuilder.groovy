@@ -1,5 +1,6 @@
 def k8slabel = "jenkins-pipeline-${UUID.randomUUID().toString()}"
 def gitCommitHash = ""
+def branch = "${scm.branches[0].name}".replaceAll(/^\*\//, '')
 def slavePodTemplate = """
       metadata:
         labels:
@@ -79,6 +80,12 @@ properties([
     ])
 
 
+if (branch.contains('dev-feature')) {
+    environment = "dev"
+} else if (branch.contains('qa-feature')) {
+    environment = "qa"
+}
+
 
 podTemplate(name: k8slabel, label: k8slabel, yaml: slavePodTemplate, showRawYaml: params.DebugMode) {
     node(k8slabel) {
@@ -125,14 +132,13 @@ podTemplate(name: k8slabel, label: k8slabel, yaml: slavePodTemplate, showRawYaml
             stage("Clean up") {
                 container("docker") {
                     sh "docker rmi --no-prune docker.fuchicorp.com/source-kube:${gitCommitHash}"
-                    // sh "docker rmi --no-prune source-kube" 
                 }
             }
 
             stage("Trigger Deploy") {
                 build job: "source-kube-deploy", 
                 parameters: [
-                    [$class: 'StringParameterValue', name: 'environment', value: "dev"],
+                    [$class: 'StringParameterValue', name: 'environment', value: "${environment}"],
                     [$class: 'StringParameterValue', name: 'dockerImage', value: "docker.fuchicorp.com/source-kube:${gitCommitHash}"]
                     ]
             }
