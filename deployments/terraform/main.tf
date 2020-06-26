@@ -29,6 +29,7 @@ variable "deployment_endpoint" {
       qa   = "qa.source"
       prod = "source"
       test = "test.source"
+      stage  = "stage.source"
   }
 }
 variable "google_domain_name" {
