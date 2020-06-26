@@ -2,7 +2,7 @@ module "source_kube" {
   source  = "fuchicorp/chart/helm"
   deployment_name        = "source-kube"
   deployment_environment = "${var.deployment_environment}"
-  deployment_endpoint    = "${lookup(var.deployment_endpoint, "${var.deployment_environment}")}"
+  deployment_endpoint    = "${lookup(var.deployment_endpoint, "${var.deployment_environment}")}.${var.google_domain_name}"
   deployment_path        = "source-kube"
   template_custom_vars = {
       replicas          = "${var.replicas}"
@@ -25,9 +25,13 @@ variable "replicas" {
 variable "deployment_endpoint" {
   type = "map"
   default = {
-      dev  = "dev.source.fuchicorp.com"
-      qa   = "qa.source.fuchicorp.com"
-      prod = "source.fuchicorp.com"
-      test = "test.source.fuchicorp.com"
+      dev  = "dev.source"
+      qa   = "qa.source"
+      prod = "source"
+      test = "test.source"
   }
+}
+variable "google_domain_name" {
+ default = "fuchicorp.com"
+
 }
